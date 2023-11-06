@@ -112,7 +112,7 @@ for i in range(epoch):
 
         if total_train_step % 100 == 0:
             end_time = time.time()
-            print(end_time-start_time)
+            print(f"每100step训练所用时间：{end_time-start_time}")
             print("训练次数：{}, Loss: {}".format(total_train_step, loss.item()))
             writer.add_scalar("train_loss", loss.item(), total_train_step)
 

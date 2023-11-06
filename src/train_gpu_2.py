@@ -13,9 +13,11 @@ import time
 # 准备数据集
 from torch import nn
 from torch.utils.data import DataLoader
+from torch.nn.functional import softmax
 
 # 定义训练的设备------------------------------------------
-device = torch.device("cuda")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda")
 # device = torch.device("cuda:0")
 train_data = torchvision.datasets.CIFAR10(root="../dataset2", train=True, transform=torchvision.transforms.ToTensor(),
                                           download=True)
@@ -29,10 +31,10 @@ test_data_size = len(test_data)
 print("训练数据集的长度为：{}".format(train_data_size))
 print("测试数据集的长度为：{}".format(test_data_size))
 
-
 # 利用 DataLoader 来加载数据集
 train_dataloader = DataLoader(train_data, batch_size=64)
 test_dataloader = DataLoader(test_data, batch_size=64)
+
 
 # 创建网络模型
 class Tudui(nn.Module):
@@ -46,13 +48,16 @@ class Tudui(nn.Module):
             nn.Conv2d(32, 64, 5, 1, 2),
             nn.MaxPool2d(2),
             nn.Flatten(),
-            nn.Linear(64*4*4, 64),
-            nn.Linear(64, 10)
+            nn.Linear(64 * 4 * 4, 64),
+            nn.Linear(64, 10),
+            nn.Softmax(dim=1) #  # 添加softmax层，dim=1表示在类别维度进行softmax操作
         )
 
     def forward(self, x):
         x = self.model(x)
         return x
+
+
 tudui = Tudui()
 # -----------------------------------
 # tudui = tudui.to(device)
@@ -76,13 +81,15 @@ total_train_step = 0
 # 记录测试的次数
 total_test_step = 0
 # 训练的轮数
-epoch = 30
+epoch = 100
+# 测试集整体正确率
+test_accuracy = 0
 
 # 添加tensorboard
 writer = SummaryWriter("../logs_train")
 start_time = time.time()
 for i in range(epoch):
-    print("-------第 {} 轮训练开始-------".format(i+1))
+    print("-------第 {} 轮训练开始-------".format(i + 1))
 
     # 训练步骤开始
     tudui.train()
@@ -102,7 +109,7 @@ for i in range(epoch):
         total_train_step = total_train_step + 1
         if total_train_step % 100 == 0:
             end_time = time.time()
-            print(f"此轮训练所用时间：{end_time-start_time}")
+            print(f"此轮训练所用时间：{end_time - start_time}")
             print("训练次数：{}, Loss: {}".format(total_train_step, loss.item()))
             writer.add_scalar("train_loss", loss.item(), total_train_step)
 
@@ -128,13 +135,17 @@ for i in range(epoch):
             total_accuracy = total_accuracy + accuracy
 
     print("整体测试集上的Loss: {}".format(total_test_loss))
-    print("整体测试集上的正确率: {}".format(total_accuracy/test_data_size))
+    print("整体测试集上的正确率: {}".format(total_accuracy / test_data_size))
+    if test_accuracy < (total_accuracy / test_data_size):
+        test_accuracy = total_accuracy/test_data_size
+        torch.save(tudui, "tudui_{}_gpu.pth".format(i + 1))
+
     writer.add_scalar("test_loss", total_test_loss, total_test_step)
-    writer.add_scalar("test_accuracy", total_accuracy/test_data_size, total_test_step)
+    writer.add_scalar("test_accuracy", total_accuracy / test_data_size, total_test_step)
     total_test_step = total_test_step + 1
 
-    if i == 29:
-        torch.save(tudui, "tudui_{}_gpu.pth".format(i+1))
+    if i == 99:
+        torch.save(tudui, "tudui_{}_gpu.pth".format(i + 1))
         print("模型已保存")
 
 # 当准确率还是不高时，可以将学习速率调小一点或训练周期还是不够

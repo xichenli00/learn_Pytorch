@@ -1,0 +1,4 @@
+*.pth
+*.onnx
+logs_train
+.idea/

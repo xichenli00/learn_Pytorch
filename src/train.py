@@ -29,7 +29,7 @@ print("测试数据集的长度为：{}".format(test_data_size))
 train_dataloader = DataLoader(train_data, batch_size=64)
 test_dataloader = DataLoader(test_data, batch_size=64)
 
-# 创建网络模型
+# 创建并初始化网络模型
 tudui = Tudui()
 
 # 损失函数

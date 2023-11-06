@@ -15,7 +15,7 @@ class Tudui(nn.Module):
             nn.MaxPool2d(2),
             nn.Conv2d(32, 64, 5, 1, 2),
             nn.MaxPool2d(2),
-            nn.Flatten(),
+            nn.Flatten(),# 64*4*4
             nn.Linear(64*4*4, 64),
             nn.Linear(64, 10)
         )

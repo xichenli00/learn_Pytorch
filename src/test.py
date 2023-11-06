@@ -5,10 +5,11 @@ import torchvision
 from PIL import Image
 from torch import nn
 
-image_path = "../imgs/dog.png"
+image_path = "../imgs/airplane.png"
 image = Image.open(image_path)
 
 print(image)
+print(image.size)
 # 因为png是四通道的，除了rgb外，还有一个透明度通道。
 # 调用convert保留其颜色通道
 # 若图片本来就是三个颜色通道，经过此操作，不变，
@@ -46,7 +47,7 @@ class Tudui(nn.Module):
         return x
 
 
-model = torch.load("tudui_30_gpu.pth", map_location=torch.device('cpu'))
+model = torch.load("tudui_90_gpu.pth", map_location=torch.device('cpu'))
 print(model)
 
 # 模型输入要求四维，第一个数是batchsize
@@ -57,5 +58,6 @@ with torch.no_grad():  # 这一步可以节约内存和性能
     output = model(image)
 print(output) # tensor([[  1.0281,  -7.8479,   8.7832,   5.0053,   4.0859,  10.0867,  -4.6588  5.3077, -10.1664,  -7.3292]])
 
-print(output.argmax(1))  # tensor([5])
+print(output.argmax(1))  # tensor([5]) tensor（【2】）tensor([1])
 
+# ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
