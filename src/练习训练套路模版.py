@@ -55,7 +55,7 @@ total_test_step = 0
 epoch = 100
 test_accuracy = 0
 
-writer = SummaryWriter("../logs")
+writer = SummaryWriter("../../../learn_pytorch/logs")
 start_time = time.time()
 for i in range(epoch):
     print(f"--------第 {i+1} 轮训练开始---------")
